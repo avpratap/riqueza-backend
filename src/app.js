@@ -40,6 +40,23 @@ app.use((req, res, next) => {
   next();
 });
 
+// Root route
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Riqueza Electric Backend API',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      auth: '/api/auth',
+      products: '/api/products',
+      cart: '/api/cart',
+      orders: '/api/orders'
+    },
+    documentation: 'https://github.com/avpratap/riqueza-backend'
+  });
+});
+
 // Routes
 app.use('/api', routes);
 

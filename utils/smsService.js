@@ -23,7 +23,7 @@ class SMSService {
 
       // Generate OTP and verification ID
       const otp = generateOTP();
-      const verificationId = await generateVerificationId();
+      const verificationId = generateVerificationId();
       const expiresAt = getOTPExpirationTime();
 
       // Store OTP in database

@@ -1,23 +1,19 @@
-// Use dynamic import for ES Module compatibility
-let uuidv4;
-
-// Initialize UUID function
-const initUUID = async () => {
-  if (!uuidv4) {
-    const { v4 } = await import('uuid');
-    uuidv4 = v4;
-  }
-  return uuidv4;
-};
+// Simple UUID v4 generator without external dependencies
+function generateUUID() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
 
 class UUIDGenerator {
   /**
    * Generate a new UUID v4
    * @returns {string} A new UUID
    */
-  static async generate() {
-    const uuid = await initUUID();
-    return uuid();
+  static generate() {
+    return generateUUID();
   }
 
   /**
@@ -25,25 +21,24 @@ class UUIDGenerator {
    * @param {string} prefix - Prefix to add to the UUID
    * @returns {string} A prefixed UUID
    */
-  static async generateWithPrefix(prefix) {
-    const uuid = await initUUID();
-    return `${prefix}_${uuid()}`;
+  static generateWithPrefix(prefix) {
+    return `${prefix}_${generateUUID()}`;
   }
 
   /**
    * Generate a user ID
    * @returns {string} A user UUID
    */
-  static async generateUserId() {
-    return await this.generateWithPrefix('usr');
+  static generateUserId() {
+    return this.generateWithPrefix('usr');
   }
 
   /**
    * Generate an OTP verification ID
    * @returns {string} An OTP verification UUID
    */
-  static async generateVerificationId() {
-    return await this.generateWithPrefix('otp');
+  static generateVerificationId() {
+    return this.generateWithPrefix('otp');
   }
 
   /**
