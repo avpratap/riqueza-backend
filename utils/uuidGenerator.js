@@ -1,12 +1,23 @@
-const { v4: uuidv4 } = require('uuid');
+// Use dynamic import for ES Module compatibility
+let uuidv4;
+
+// Initialize UUID function
+const initUUID = async () => {
+  if (!uuidv4) {
+    const { v4 } = await import('uuid');
+    uuidv4 = v4;
+  }
+  return uuidv4;
+};
 
 class UUIDGenerator {
   /**
    * Generate a new UUID v4
    * @returns {string} A new UUID
    */
-  static generate() {
-    return uuidv4();
+  static async generate() {
+    const uuid = await initUUID();
+    return uuid();
   }
 
   /**
@@ -14,24 +25,25 @@ class UUIDGenerator {
    * @param {string} prefix - Prefix to add to the UUID
    * @returns {string} A prefixed UUID
    */
-  static generateWithPrefix(prefix) {
-    return `${prefix}_${uuidv4()}`;
+  static async generateWithPrefix(prefix) {
+    const uuid = await initUUID();
+    return `${prefix}_${uuid()}`;
   }
 
   /**
    * Generate a user ID
    * @returns {string} A user UUID
    */
-  static generateUserId() {
-    return this.generateWithPrefix('usr');
+  static async generateUserId() {
+    return await this.generateWithPrefix('usr');
   }
 
   /**
    * Generate an OTP verification ID
    * @returns {string} An OTP verification UUID
    */
-  static generateVerificationId() {
-    return this.generateWithPrefix('otp');
+  static async generateVerificationId() {
+    return await this.generateWithPrefix('otp');
   }
 
   /**
