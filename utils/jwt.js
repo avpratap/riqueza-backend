@@ -1,10 +1,10 @@
 const jwt = require('jsonwebtoken');
 
-// Force use of our new secret for production (overriding any old environment variables)
-const JWT_SECRET = 'riqueza-default-secret-key-change-in-production-2024';
+// Use environment variable for JWT secret (development-ready approach)
+const JWT_SECRET = process.env.JWT_SECRET || 'riqueza-development-secret-key-2024';
 
 console.log('🔑 JWT Secret configured:', JWT_SECRET ? 'YES' : 'NO');
-console.log('🔑 Using forced JWT secret for production');
+console.log('🔑 Using JWT secret from environment or development fallback');
 
 class JWTService {
   static generateToken(payload) {
