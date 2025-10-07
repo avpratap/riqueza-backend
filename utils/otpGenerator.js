@@ -6,8 +6,8 @@ const generateOTP = () => {
 };
 
 // Generate unique verification ID using UUID
-const generateVerificationId = async () => {
-  return await UUIDGenerator.generateVerificationId();
+const generateVerificationId = () => {
+  return UUIDGenerator.generateVerificationId();
 };
 
 // Calculate OTP expiration time (5 minutes from now)

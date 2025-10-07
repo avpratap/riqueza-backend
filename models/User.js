@@ -4,7 +4,7 @@ const UUIDGenerator = require('../utils/uuidGenerator');
 class User {
   static async create(userData) {
     const { phone, name, email, role = 'user' } = userData;
-    const userId = await UUIDGenerator.generate(); // Pure UUID for database
+    const userId = UUIDGenerator.generate(); // Pure UUID for database
     
     const query = `
       INSERT INTO users (id, phone, name, email, role)
