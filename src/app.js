@@ -8,9 +8,26 @@ dotenv.config();
 
 const app = express();
 
-// Middleware
+// CORS Configuration - Allow multiple origins
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://localhost:3000',
+  process.env.FRONTEND_URL,
+  process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
+].filter(Boolean);
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin is in allowed list or matches Vercel preview deployments
+    if (allowedOrigins.indexOf(origin) !== -1 || origin.includes('.vercel.app')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 
