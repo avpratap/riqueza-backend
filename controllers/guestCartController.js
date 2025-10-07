@@ -276,7 +276,7 @@ const addToGuestCart = async (req, res) => {
       const client = await db.connect();
       try {
         // Create a guest user entry if it doesn't exist (convert sessionId to UUID)
-        const { v4: uuidv4 } = require('uuid');
+        const UUIDGenerator = require('../utils/uuidGenerator');
         
         // First, check if guest user already exists
         const existingUser = await client.query(`
@@ -290,7 +290,7 @@ const addToGuestCart = async (req, res) => {
           console.log('✅ Using existing guest user:', sessionId, guestUserId);
         } else {
           // Generate new UUID only for new users
-          guestUserId = uuidv4();
+          guestUserId = UUIDGenerator.generate();
           await client.query(`
             INSERT INTO users (id, phone, name, role, is_verified, session_id) 
             VALUES ($1, $2, $3, $4, $5, $6)
