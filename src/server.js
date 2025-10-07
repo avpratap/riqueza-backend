@@ -23,7 +23,7 @@ const startServer = async () => {
     
     // Start the server
     app.listen(PORT, () => {
-      console.log(`🚀 Requeza Backend Server running on port ${PORT}`);
+      console.log(`🚀 Riqueza Backend Server running on port ${PORT}`);
       console.log(`📱 Environment: ${process.env.NODE_ENV || 'development'}`);
       console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`);
       console.log(`📊 Database: ${process.env.DB_NAME}@${process.env.DB_HOST}:${process.env.DB_PORT}`);

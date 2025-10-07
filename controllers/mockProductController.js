@@ -2,7 +2,7 @@
 const mockProducts = [
   {
     id: 'prod_1',
-    name: 'Requeza S1 Pro+',
+    name: 'Riqueza S1 Pro+',
     slug: 'requeza-s1-pro-plus',
     description: 'The most advanced electric scooter with cutting-edge technology and superior performance.',
     category: 'scooter',
@@ -88,42 +88,42 @@ const mockProducts = [
       {
         id: 'img_1',
         image_url: 'https://res.cloudinary.com/dnulm62j6/image/upload/v1758562609/m1_o5y1jo.webp',
-        alt_text: 'Requeza S1 Pro+ view 1',
+        alt_text: 'Riqueza S1 Pro+ view 1',
         display_order: 0,
         is_primary: true
       },
       {
         id: 'img_2',
         image_url: 'https://res.cloudinary.com/dnulm62j6/image/upload/v1758562608/m2_xky6n1.webp',
-        alt_text: 'Requeza S1 Pro+ view 2',
+        alt_text: 'Riqueza S1 Pro+ view 2',
         display_order: 1,
         is_primary: false
       },
       {
         id: 'img_3',
         image_url: 'https://res.cloudinary.com/dnulm62j6/image/upload/v1758562609/m3_tn7u9o.webp',
-        alt_text: 'Requeza S1 Pro+ view 3',
+        alt_text: 'Riqueza S1 Pro+ view 3',
         display_order: 2,
         is_primary: false
       },
       {
         id: 'img_4',
         image_url: 'https://res.cloudinary.com/dnulm62j6/image/upload/v1758562609/m5_iq9xd7.webp',
-        alt_text: 'Requeza S1 Pro+ view 4',
+        alt_text: 'Riqueza S1 Pro+ view 4',
         display_order: 3,
         is_primary: false
       },
       {
         id: 'img_5',
         image_url: 'https://res.cloudinary.com/dnulm62j6/image/upload/v1758562609/m4_nvk8rs.webp',
-        alt_text: 'Requeza S1 Pro+ view 5',
+        alt_text: 'Riqueza S1 Pro+ view 5',
         display_order: 4,
         is_primary: false
       },
       {
         id: 'img_6',
         image_url: 'https://res.cloudinary.com/dnulm62j6/image/upload/v1758562609/m6_j0kype.webp',
-        alt_text: 'Requeza S1 Pro+ view 6',
+        alt_text: 'Riqueza S1 Pro+ view 6',
         display_order: 5,
         is_primary: false
       }
@@ -135,7 +135,7 @@ const mockProducts = [
   },
   {
     id: 'prod_2',
-    name: 'Requeza S1 Pro',
+    name: 'Riqueza S1 Pro',
     slug: 'requeza-s1-pro',
     description: 'Premium electric scooter with excellent performance and advanced features.',
     category: 'scooter',
@@ -221,42 +221,42 @@ const mockProducts = [
       {
         id: 'img_7',
         image_url: 'https://res.cloudinary.com/dnulm62j6/image/upload/v1758562610/n1_so0l6n.webp',
-        alt_text: 'Requeza S1 Pro view 1',
+        alt_text: 'Riqueza S1 Pro view 1',
         display_order: 0,
         is_primary: true
       },
       {
         id: 'img_8',
         image_url: 'https://res.cloudinary.com/dnulm62j6/image/upload/v1758562610/n2_wnexzw.webp',
-        alt_text: 'Requeza S1 Pro view 2',
+        alt_text: 'Riqueza S1 Pro view 2',
         display_order: 1,
         is_primary: false
       },
       {
         id: 'img_9',
         image_url: 'https://res.cloudinary.com/dnulm62j6/image/upload/v1758562610/n3_mxf4xf.webp',
-        alt_text: 'Requeza S1 Pro view 3',
+        alt_text: 'Riqueza S1 Pro view 3',
         display_order: 2,
         is_primary: false
       },
       {
         id: 'img_10',
         image_url: 'https://res.cloudinary.com/dnulm62j6/image/upload/v1758562610/n4_xaznx8.webp',
-        alt_text: 'Requeza S1 Pro view 4',
+        alt_text: 'Riqueza S1 Pro view 4',
         display_order: 3,
         is_primary: false
       },
       {
         id: 'img_11',
         image_url: 'https://res.cloudinary.com/dnulm62j6/image/upload/v1758562614/n5_a9l6j5.webp',
-        alt_text: 'Requeza S1 Pro view 5',
+        alt_text: 'Riqueza S1 Pro view 5',
         display_order: 4,
         is_primary: false
       },
       {
         id: 'img_12',
         image_url: 'https://res.cloudinary.com/dnulm62j6/image/upload/v1758562615/n6_wesmwl.webp',
-        alt_text: 'Requeza S1 Pro view 6',
+        alt_text: 'Riqueza S1 Pro view 6',
         display_order: 5,
         is_primary: false
       }

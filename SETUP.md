@@ -1,4 +1,4 @@
-# 🚀 Requeza Backend Setup Guide
+# 🚀 Riqueza Backend Setup Guide
 
 ## Prerequisites
 
@@ -101,7 +101,7 @@ Expected response:
 ```json
 {
   "success": true,
-  "message": "Requeza Backend API is running",
+  "message": "Riqueza Backend API is running",
   "timestamp": "2025-01-21T19:15:00.000Z",
   "environment": "development"
 }
@@ -233,7 +233,7 @@ If you encounter any issues:
 
 Once everything is working, you should see:
 ```
-🚀 Requeza Backend Server running on port 5000
+🚀 Riqueza Backend Server running on port 5000
 📱 Environment: development
 🌐 Frontend URL: http://localhost:3000
 📊 Database: RIQUEZA@localhost:5432

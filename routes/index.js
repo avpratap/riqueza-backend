@@ -15,7 +15,7 @@ const userActivityRoutes = require('./user-activities');
 router.get('/health', (req, res) => {
   res.json({
     success: true,
-    message: 'Requeza Backend API is running',
+    message: 'Riqueza Backend API is running',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development'
   });

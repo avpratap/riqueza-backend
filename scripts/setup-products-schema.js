@@ -137,14 +137,14 @@ async function insertSampleData() {
   try {
     console.log('📦 Inserting sample product data...');
 
-    // Insert Requeza S1 Pro+ product
+    // Insert Riqueza S1 Pro+ product
     const s1ProPlusResult = await pool.query(`
       INSERT INTO products (name, slug, description, category, base_price, original_price, is_featured, rating, review_count)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING id
     `, [
-      'Requeza S1 Pro+',
-      'requeza-s1-pro-plus',
+      'Riqueza S1 Pro+',
+      'riqueza-s1-pro-plus',
       'The most advanced electric scooter with cutting-edge technology and superior performance.',
       'scooter',
       129999.00,
@@ -156,14 +156,14 @@ async function insertSampleData() {
 
     const s1ProPlusId = s1ProPlusResult.rows[0].id;
 
-    // Insert Requeza S1 Pro product
+    // Insert Riqueza S1 Pro product
     const s1ProResult = await pool.query(`
       INSERT INTO products (name, slug, description, category, base_price, original_price, is_featured, rating, review_count)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING id
     `, [
-      'Requeza S1 Pro',
-      'requeza-s1-pro',
+      'Riqueza S1 Pro',
+      'riqueza-s1-pro',
       'Premium electric scooter with excellent performance and advanced features.',
       'scooter',
       119999.00,
@@ -241,7 +241,7 @@ async function insertSampleData() {
       await pool.query(`
         INSERT INTO product_images (product_id, image_url, alt_text, display_order, is_primary)
         VALUES ($1, $2, $3, $4, $5)
-      `, [s1ProPlusId, s1ProPlusImages[i], `Requeza S1 Pro+ view ${i + 1}`, i, i === 0]);
+      `, [s1ProPlusId, s1ProPlusImages[i], `Riqueza S1 Pro+ view ${i + 1}`, i, i === 0]);
     }
 
     // Insert images for S1 Pro (6 images)
@@ -258,7 +258,7 @@ async function insertSampleData() {
       await pool.query(`
         INSERT INTO product_images (product_id, image_url, alt_text, display_order, is_primary)
         VALUES ($1, $2, $3, $4, $5)
-      `, [s1ProId, s1ProImages[i], `Requeza S1 Pro view ${i + 1}`, i, i === 0]);
+      `, [s1ProId, s1ProImages[i], `Riqueza S1 Pro view ${i + 1}`, i, i === 0]);
     }
 
     // Insert accessories

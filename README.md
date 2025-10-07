@@ -1,6 +1,6 @@
-# Requeza Backend API
+# Riqueza Backend API
 
-A Node.js, Express, and PostgreSQL backend for the Requeza Electric Vehicle application.
+A Node.js, Express, and PostgreSQL backend for the Riqueza Electric Vehicle application.
 
 ## 🚀 Features
 
@@ -14,7 +14,7 @@ A Node.js, Express, and PostgreSQL backend for the Requeza Electric Vehicle appl
 ## 📁 Project Structure
 
 ```
-Requeza Backend/
+Riqueza Backend/
 ├── src/
 │   ├── app.js          # Express app configuration
 │   └── server.js       # Server startup and database connection

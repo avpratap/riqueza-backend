@@ -39,7 +39,7 @@ class SMSService {
       if (client) {
         try {
           const message = await client.messages.create({
-            body: `Your Requeza Electric OTP is: ${otp}. Valid for 5 minutes.`,
+            body: `Your Riqueza Electric OTP is: ${otp}. Valid for 5 minutes.`,
             from: process.env.TWILIO_PHONE_NUMBER,
             to: phoneNumber
           });
