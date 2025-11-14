@@ -38,7 +38,8 @@ app.use(express.urlencoded({ extended: true }));
 
 // Request logging middleware
 app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path} ${req.originalUrl}`);
+  console.log('Request body:', req.body);
   next();
 });
 
@@ -62,6 +63,15 @@ app.get('/', (req, res) => {
 // Routes
 app.use('/api', routes);
 
+// Debug: Log route registration
+console.log('🔌 Routes registered at /api');
+console.log('📋 Available routes:');
+console.log('  POST /api/auth/send-otp');
+console.log('  POST /api/auth/verify-otp-only');
+console.log('  POST /api/auth/signup');
+console.log('  POST /api/auth/login');
+console.log('  GET  /api/health');
+
 // Global error handler
 app.use((err, req, res, next) => {
   console.error('Global Error Handler:', err);
@@ -76,9 +86,15 @@ app.use((err, req, res, next) => {
 
 // 404 handler
 app.use((req, res) => {
+  console.log('❌ 404 - Route not found:', req.method, req.path, req.originalUrl);
+  console.log('Request headers:', req.headers);
   res.status(404).json({
     success: false,
-    error: 'Route not found'
+    error: 'Route not found',
+    method: req.method,
+    path: req.path,
+    originalUrl: req.originalUrl,
+    message: `The endpoint ${req.method} ${req.path} was not found. Available endpoints: /api/auth/send-otp, /api/auth/login, /api/health`
   });
 });
 

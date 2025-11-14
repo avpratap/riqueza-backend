@@ -258,7 +258,8 @@ const addToGuestCart = async (req, res) => {
       }
     }
     
-    // Check if item already exists
+    // Check if item already exists in memory (for optimization)
+    // Note: We'll verify this against the database later to handle race conditions
     const existingItemIndex = cartData.items.findIndex(
       item => 
         item.product_id === product_id && 
@@ -266,14 +267,15 @@ const addToGuestCart = async (req, res) => {
         item.color_id === color_id
     );
     
+    // Update memory cache optimistically (will be corrected by database reload after save)
     if (existingItemIndex >= 0) {
-      // Update existing item
+      // Update existing item in memory
       cartData.items[existingItemIndex].quantity += parseInt(quantity);
       cartData.items[existingItemIndex].total_price = cartData.items[existingItemIndex].quantity * (total_price / quantity);
     } else {
-      // Add new item
+      // Add new item to memory
       const newItem = {
-        id: `${product_id}-${variant_id}-${color_id}`,
+        id: `${product_id}-${variant_id}-${color_id}`, // Temporary ID, will be replaced by database ID
         product_id,
         variant_id,
         color_id,
@@ -284,11 +286,11 @@ const addToGuestCart = async (req, res) => {
       cartData.items.push(newItem);
     }
     
-    // Update totals
+    // Update totals in memory (will be recalculated after database reload)
     cartData.totalItems = cartData.items.reduce((sum, item) => sum + item.quantity, 0);
     cartData.totalPrice = cartData.items.reduce((sum, item) => sum + item.total_price, 0);
     
-    // Save cart in memory
+    // Save cart in memory (will be updated with correct data after database save)
     guestCarts.set(sessionId, cartData);
 
     // Also store in database for persistence
@@ -354,44 +356,73 @@ const addToGuestCart = async (req, res) => {
           }
         }
 
-        // Store cart item in database
+        // Check database directly for existing item to avoid race conditions
+        // This is critical when multiple requests come in simultaneously
+        const existingItemResult = await client.query(`
+          SELECT id, quantity, total_price 
+          FROM cart_items 
+          WHERE user_id = $1 AND product_id = $2 AND variant_id = $3 AND color_id = $4
+        `, [guestUserId, product_id, variant_id, color_id]);
+        
+        const existingItemInDb = existingItemResult.rows[0];
+        
         console.log('💾 Storing cart item in database:', {
           guestUserId,
           product_id,
           variant_id,
           color_id,
           quantity,
+          existingItemInDb: existingItemInDb ? { id: existingItemInDb.id, quantity: existingItemInDb.quantity } : 'new',
           existingItemIndex: existingItemIndex >= 0 ? existingItemIndex : 'new'
         });
         
-        if (existingItemIndex >= 0) {
-          // Update existing item in database
+        if (existingItemInDb) {
+          // Item exists in database - update it (handles race conditions)
+          const newQuantity = parseInt(existingItemInDb.quantity) + parseInt(quantity);
+          const unitPrice = parseFloat(total_price) / parseInt(quantity);
+          const newTotalPrice = newQuantity * unitPrice;
+          
           const result = await client.query(`
             UPDATE cart_items 
             SET quantity = $1, total_price = $2, accessories = $3, updated_at = CURRENT_TIMESTAMP
-            WHERE user_id = $4 AND product_id = $5 AND variant_id = $6 AND color_id = $7
+            WHERE id = $4
             RETURNING *
           `, [
-            cartData.items[existingItemIndex].quantity,
-            cartData.items[existingItemIndex].total_price,
+            newQuantity,
+            newTotalPrice,
             JSON.stringify(accessories),
-            guestUserId,
-            product_id,
-            variant_id,
-            color_id
+            existingItemInDb.id
           ]);
-          console.log('✅ Updated existing cart item in database:', result.rows[0]?.id);
+          console.log('✅ Updated existing cart item in database:', {
+            itemId: result.rows[0]?.id,
+            oldQuantity: existingItemInDb.quantity,
+            newQuantity,
+            newTotalPrice
+          });
         } else {
-          // Insert new item in database
-          // Note: The id field will be auto-generated as UUID by the database
+          // Item doesn't exist in database - use UPSERT to handle concurrent inserts
+          // This ensures that even if two requests try to insert simultaneously,
+          // only one will succeed and the other will update
           const result = await client.query(`
             INSERT INTO cart_items (user_id, product_id, variant_id, color_id, quantity, accessories, total_price)
             VALUES ($1, $2, $3, $4, $5, $6, $7)
             ON CONFLICT (user_id, product_id, variant_id, color_id) 
-            DO UPDATE SET quantity = cart_items.quantity + $5, total_price = cart_items.total_price + $7, updated_at = CURRENT_TIMESTAMP
+            DO UPDATE SET 
+              quantity = cart_items.quantity + EXCLUDED.quantity,
+              total_price = cart_items.total_price + EXCLUDED.total_price,
+              accessories = EXCLUDED.accessories,
+              updated_at = CURRENT_TIMESTAMP
             RETURNING *
           `, [guestUserId, product_id, variant_id, color_id, parseInt(quantity), JSON.stringify(accessories), parseFloat(total_price)]);
-          console.log('✅ Inserted new cart item in database:', result.rows[0]?.id);
+          
+          if (result.rows[0]) {
+            const wasConflict = result.rows[0].quantity > parseInt(quantity);
+            console.log(wasConflict 
+              ? '✅ Inserted item but conflict occurred - updated existing item in database:'
+              : '✅ Inserted new cart item in database:', 
+              { itemId: result.rows[0]?.id, finalQuantity: result.rows[0]?.quantity }
+            );
+          }
         }
         
         // After saving to database, reload complete cart with full product details

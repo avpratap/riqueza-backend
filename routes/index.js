@@ -23,6 +23,7 @@ router.get('/health', (req, res) => {
 
 // API routes
 router.use('/auth', authRoutes);
+console.log('✅ Auth routes registered at /auth');
 router.use('/products', productRoutes);
 router.use('/cart', cartRoutes);
 router.use('/guest-cart', guestCartRoutes);
