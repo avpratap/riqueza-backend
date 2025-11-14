@@ -1,28 +1,26 @@
 const pool = require('../config/database');
-const UUIDGenerator = require('../utils/uuidGenerator');
 
 class User {
   static async create(userData) {
     const { phone, name, email, role = 'user' } = userData;
-    const userId = UUIDGenerator.generate(); // Pure UUID for database
     
+    // Database will auto-generate UUID using uuid_generate_v4()
     const query = `
-      INSERT INTO users (id, phone, name, email, role)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO users (phone, name, email, role)
+      VALUES ($1, $2, $3, $4)
       RETURNING *
     `;
-    const values = [userId, phone, name, email, role];
+    const values = [phone, name, email, role];
     
     try {
       const result = await pool.query(query, values);
       const user = result.rows[0];
       
-      // Convert to prefixed format for application use
-      return {
-        ...user,
-        id: `usr_${user.id}` // Convert to prefixed format using original UUID
-      };
+      console.log('✅ User created with UUID:', user.id);
+      // Return user with UUID
+      return user;
     } catch (error) {
+      console.error('❌ User creation error:', error);
       throw error;
     }
   }
@@ -33,35 +31,22 @@ class User {
     
     try {
       const result = await pool.query(query, values);
-      if (result.rows[0]) {
-        return {
-          ...result.rows[0],
-          id: `usr_${result.rows[0].id}` // Convert to prefixed format using original UUID
-        };
-      }
-      return null;
+      return result.rows[0] || null;
     } catch (error) {
+      console.error('Find by phone error:', error);
       throw error;
     }
   }
 
   static async findById(id) {
-    // Convert prefixed ID to pure UUID for database query
-    const pureUuid = id.includes('_') ? id.split('_')[1] : id;
-    
     const query = 'SELECT * FROM users WHERE id = $1';
-    const values = [pureUuid];
+    const values = [id];
     
     try {
       const result = await pool.query(query, values);
-      if (result.rows[0]) {
-        return {
-          ...result.rows[0],
-          id: `usr_${result.rows[0].id}` // Convert to prefixed format using original UUID
-        };
-      }
-      return null;
+      return result.rows[0] || null;
     } catch (error) {
+      console.error('Find by ID error:', error);
       throw error;
     }
   }
@@ -79,9 +64,6 @@ class User {
   }
 
   static async update(id, updateData) {
-    // Convert prefixed ID to pure UUID for database query
-    const pureUuid = id.includes('_') ? id.split('_')[1] : id;
-    
     const fields = [];
     const values = [];
     let paramCount = 1;
@@ -98,7 +80,7 @@ class User {
       throw new Error('No fields to update');
     }
 
-    values.push(pureUuid);
+    values.push(id);
     const query = `
       UPDATE users 
       SET ${fields.join(', ')}
@@ -108,35 +90,22 @@ class User {
 
     try {
       const result = await pool.query(query, values);
-      if (result.rows[0]) {
-        return {
-          ...result.rows[0],
-          id: `usr_${result.rows[0].id}` // Convert to prefixed format using original UUID
-        };
-      }
-      return null;
+      return result.rows[0] || null;
     } catch (error) {
+      console.error('Update user error:', error);
       throw error;
     }
   }
 
   static async delete(id) {
-    // Convert prefixed ID to pure UUID for database query
-    const pureUuid = id.includes('_') ? id.split('_')[1] : id;
-    
     const query = 'DELETE FROM users WHERE id = $1 RETURNING *';
-    const values = [pureUuid];
+    const values = [id];
     
     try {
       const result = await pool.query(query, values);
-      if (result.rows[0]) {
-        return {
-          ...result.rows[0],
-          id: `usr_${result.rows[0].id}` // Convert to prefixed format using original UUID
-        };
-      }
-      return null;
+      return result.rows[0] || null;
     } catch (error) {
+      console.error('Delete user error:', error);
       throw error;
     }
   }
@@ -146,11 +115,9 @@ class User {
     
     try {
       const result = await pool.query(query);
-      return result.rows.map(user => ({
-        ...user,
-        id: `usr_${user.id}` // Convert to prefixed format using original UUID
-      }));
+      return result.rows;
     } catch (error) {
+      console.error('Get all users error:', error);
       throw error;
     }
   }

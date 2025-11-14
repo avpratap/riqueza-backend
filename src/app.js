@@ -11,7 +11,9 @@ const app = express();
 // CORS Configuration - Allow multiple origins
 const allowedOrigins = [
   'http://localhost:3000',
+  'http://localhost:3003',
   'https://localhost:3000',
+  'https://localhost:3003',
   process.env.FRONTEND_URL,
   process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
 ].filter(Boolean);

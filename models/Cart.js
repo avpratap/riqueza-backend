@@ -4,8 +4,8 @@ class Cart {
   // Get user's cart items with product details
   static async getByUserId(userId) {
     try {
-      // Convert prefixed user ID to pure UUID for database query
-      const pureUserId = userId.includes('_') ? userId.split('_')[1] : userId;
+      // userId is UUID from database
+      console.log('🛒 Getting cart for user:', userId);
       
       const query = `
         SELECT 
@@ -42,19 +42,20 @@ class Cart {
             '[]'::json
           ) as product_images
         FROM cart_items ci
-        LEFT JOIN products p ON ci.product_id::text = p.id::text
-        LEFT JOIN product_variants pv ON ci.variant_id::text = pv.id::text
-        LEFT JOIN product_colors pc ON ci.color_id::text = pc.id::text
+        LEFT JOIN products p ON ci.product_id = p.id
+        LEFT JOIN product_variants pv ON ci.variant_id = pv.id
+        LEFT JOIN product_colors pc ON ci.color_id = pc.id
         LEFT JOIN product_images pi ON p.id = pi.product_id
-        WHERE ci.user_id::text = $1
+        WHERE ci.user_id = $1
         GROUP BY ci.id, p.id, pv.id, pc.id
         ORDER BY ci.created_at DESC
       `;
       
-      const result = await db.query(query, [pureUserId]);
+      const result = await db.query(query, [userId]);
+      console.log(`✅ Found ${result.rows.length} cart items for user`);
       return result.rows;
     } catch (error) {
-      console.error('Error fetching cart items:', error);
+      console.error('❌ Error fetching cart items:', error);
       throw error;
     }
   }
@@ -65,13 +66,11 @@ class Cart {
     try {
       await client.query('BEGIN');
 
-      // Convert prefixed user ID to pure UUID for database query
-      const pureUserId = userId.includes('_') ? userId.split('_')[1] : userId;
-      
+      // userId is UUID, use directly
       const { product_id, variant_id, color_id, quantity, accessories, total_price } = cartData;
 
       console.log('🛒 Adding item to cart:', {
-        userId: pureUserId,
+        userId,
         product_id,
         variant_id,
         color_id,
@@ -83,10 +82,10 @@ class Cart {
       const checkQuery = `
         SELECT id, quantity, total_price 
         FROM cart_items 
-        WHERE user_id::text = $1 AND product_id = $2 AND variant_id = $3 AND color_id = $4
+        WHERE user_id = $1 AND product_id = $2 AND variant_id = $3 AND color_id = $4
       `;
       
-      const existingItem = await client.query(checkQuery, [pureUserId, product_id, variant_id, color_id]);
+      const existingItem = await client.query(checkQuery, [userId, product_id, variant_id, color_id]);
       
       if (existingItem.rows.length > 0) {
         // Item exists - update quantity and total price
@@ -141,7 +140,7 @@ class Cart {
         const accessoriesJson = typeof accessories === 'string' ? accessories : JSON.stringify(accessories || []);
         
         const result = await client.query(insertQuery, [
-          pureUserId,
+          userId,
           product_id,
           variant_id,
           color_id,
@@ -171,8 +170,7 @@ class Cart {
   // Update cart item quantity
   static async updateQuantity(userId, itemId, quantity) {
     try {
-      // Convert prefixed user ID to pure UUID for database query
-      const pureUserId = userId.includes('_') ? userId.split('_')[1] : userId;
+      // userId is UUID, use directly
       
       if (quantity <= 0) {
         // Remove item if quantity is 0 or negative
@@ -183,11 +181,11 @@ class Cart {
       const getItemQuery = `
         SELECT ci.*, pv.price as variant_price
         FROM cart_items ci
-        LEFT JOIN product_variants pv ON ci.variant_id::text = pv.id::text
-        WHERE ci.id = $1 AND ci.user_id::text = $2
+        LEFT JOIN product_variants pv ON ci.variant_id = pv.id
+        WHERE ci.id = $1 AND ci.user_id = $2
       `;
       
-      const itemResult = await db.query(getItemQuery, [itemId, pureUserId]);
+      const itemResult = await db.query(getItemQuery, [itemId, userId]);
       
       if (itemResult.rows.length === 0) {
         throw new Error('Cart item not found');
@@ -206,7 +204,7 @@ class Cart {
         RETURNING *
       `;
       
-      const result = await db.query(updateQuery, [quantity, newTotalPrice, itemId, pureUserId]);
+      const result = await db.query(updateQuery, [quantity, newTotalPrice, itemId, userId]);
       
       if (result.rows.length === 0) {
         throw new Error('Cart item not found');
@@ -226,18 +224,17 @@ class Cart {
   // Increment cart item quantity by 1
   static async incrementQuantity(userId, itemId) {
     try {
-      // Convert prefixed user ID to pure UUID for database query
-      const pureUserId = userId.includes('_') ? userId.split('_')[1] : userId;
+      // userId is UUID, use directly
       
       // Get current item to calculate new total price
       const getItemQuery = `
         SELECT ci.*, pv.price as variant_price
         FROM cart_items ci
-        LEFT JOIN product_variants pv ON ci.variant_id::text = pv.id::text
-        WHERE ci.id = $1 AND ci.user_id::text = $2
+        LEFT JOIN product_variants pv ON ci.variant_id = pv.id
+        WHERE ci.id = $1 AND ci.user_id = $2
       `;
       
-      const itemResult = await db.query(getItemQuery, [itemId, pureUserId]);
+      const itemResult = await db.query(getItemQuery, [itemId, userId]);
       
       if (itemResult.rows.length === 0) {
         throw new Error('Cart item not found');
@@ -257,7 +254,7 @@ class Cart {
         RETURNING *
       `;
       
-      const result = await db.query(updateQuery, [newQuantity, newTotalPrice, itemId, pureUserId]);
+      const result = await db.query(updateQuery, [newQuantity, newTotalPrice, itemId, userId]);
       
       if (result.rows.length === 0) {
         throw new Error('Cart item not found');
@@ -277,18 +274,17 @@ class Cart {
   // Decrement cart item quantity by 1
   static async decrementQuantity(userId, itemId) {
     try {
-      // Convert prefixed user ID to pure UUID for database query
-      const pureUserId = userId.includes('_') ? userId.split('_')[1] : userId;
+      // userId is UUID, use directly
       
       // Get current item
       const getItemQuery = `
         SELECT ci.*, pv.price as variant_price
         FROM cart_items ci
-        LEFT JOIN product_variants pv ON ci.variant_id::text = pv.id::text
-        WHERE ci.id = $1 AND ci.user_id::text = $2
+        LEFT JOIN product_variants pv ON ci.variant_id = pv.id
+        WHERE ci.id = $1 AND ci.user_id = $2
       `;
       
-      const itemResult = await db.query(getItemQuery, [itemId, pureUserId]);
+      const itemResult = await db.query(getItemQuery, [itemId, userId]);
       
       if (itemResult.rows.length === 0) {
         throw new Error('Cart item not found');
@@ -314,7 +310,7 @@ class Cart {
         RETURNING *
       `;
       
-      const result = await db.query(updateQuery, [newQuantity, newTotalPrice, itemId, pureUserId]);
+      const result = await db.query(updateQuery, [newQuantity, newTotalPrice, itemId, userId]);
       
       if (result.rows.length === 0) {
         throw new Error('Cart item not found');
@@ -334,11 +330,10 @@ class Cart {
   // Remove item from cart
   static async removeItem(userId, itemId) {
     try {
-      // Convert prefixed user ID to pure UUID for database query
-      const pureUserId = userId.includes('_') ? userId.split('_')[1] : userId;
+      // userId is UUID, use directly
       
-      const query = 'DELETE FROM cart_items WHERE id = $1 AND user_id::text = $2 RETURNING *';
-      const result = await db.query(query, [itemId, pureUserId]);
+      const query = 'DELETE FROM cart_items WHERE id = $1 AND user_id = $2 RETURNING *';
+      const result = await db.query(query, [itemId, userId]);
       
       if (result.rows.length === 0) {
         throw new Error('Cart item not found');
@@ -358,11 +353,10 @@ class Cart {
   // Clear user's cart
   static async clearCart(userId) {
     try {
-      // Convert prefixed user ID to pure UUID for database query
-      const pureUserId = userId.includes('_') ? userId.split('_')[1] : userId;
+      // userId is UUID, use directly
       
-      const query = 'DELETE FROM cart_items WHERE user_id::text = $1 RETURNING *';
-      const result = await db.query(query, [pureUserId]);
+      const query = 'DELETE FROM cart_items WHERE user_id = $1 RETURNING *';
+      const result = await db.query(query, [userId]);
       
       return { 
         success: true, 
@@ -378,8 +372,7 @@ class Cart {
   // Get cart summary
   static async getCartSummary(userId) {
     try {
-      // Convert prefixed user ID to pure UUID for database query
-      const pureUserId = userId.includes('_') ? userId.split('_')[1] : userId;
+      // userId is UUID, use directly
       
       const query = `
         SELECT 
@@ -387,10 +380,10 @@ class Cart {
           COALESCE(SUM(quantity), 0) as total_quantity,
           COALESCE(SUM(total_price), 0) as total_price
         FROM cart_items 
-        WHERE user_id::text = $1
+        WHERE user_id = $1
       `;
       
-      const result = await db.query(query, [pureUserId]);
+      const result = await db.query(query, [userId]);
       return result.rows[0];
     } catch (error) {
       console.error('Error getting cart summary:', error);
@@ -401,11 +394,10 @@ class Cart {
   // Check if cart is empty
   static async isEmpty(userId) {
     try {
-      // Convert prefixed user ID to pure UUID for database query
-      const pureUserId = userId.includes('_') ? userId.split('_')[1] : userId;
+      // userId is UUID, use directly
       
-      const query = 'SELECT COUNT(*) as count FROM cart_items WHERE user_id::text = $1';
-      const result = await db.query(query, [pureUserId]);
+      const query = 'SELECT COUNT(*) as count FROM cart_items WHERE user_id = $1';
+      const result = await db.query(query, [userId]);
       return parseInt(result.rows[0].count) === 0;
     } catch (error) {
       console.error('Error checking if cart is empty:', error);
@@ -416,8 +408,7 @@ class Cart {
   // Get cart item by ID
   static async getItemById(userId, itemId) {
     try {
-      // Convert prefixed user ID to pure UUID for database query
-      const pureUserId = userId.includes('_') ? userId.split('_')[1] : userId;
+      // userId is UUID, use directly
       
       const query = `
         SELECT 
@@ -442,13 +433,13 @@ class Cart {
           pc.color_code as color_code,
           pc.css_filter as color_css_filter
         FROM cart_items ci
-        LEFT JOIN products p ON ci.product_id::text = p.id::text
-        LEFT JOIN product_variants pv ON ci.variant_id::text = pv.id::text
-        LEFT JOIN product_colors pc ON ci.color_id::text = pc.id::text
-        WHERE ci.id = $1 AND ci.user_id::text = $2
+        LEFT JOIN products p ON ci.product_id = p.id
+        LEFT JOIN product_variants pv ON ci.variant_id = pv.id
+        LEFT JOIN product_colors pc ON ci.color_id = pc.id
+        WHERE ci.id = $1 AND ci.user_id = $2
       `;
       
-      const result = await db.query(query, [itemId, pureUserId]);
+      const result = await db.query(query, [itemId, userId]);
       
       if (result.rows.length === 0) {
         throw new Error('Cart item not found');

@@ -3,8 +3,7 @@ const db = require('../config/database');
 class Order {
   // Create new order
   static async create(userId, orderData) {
-    // Convert prefixed user ID to pure UUID for database query
-    const pureUserId = userId.includes('_') ? userId.split('_')[1] : userId;
+    // userId is UUID, use directly
     
     const client = await db.connect();
     try {
@@ -18,10 +17,12 @@ class Order {
         delivery_fee = 0
       } = orderData;
 
+      console.log('📦 Creating order for user:', userId);
+
       // Get cart items from database
       const cartItemsResult = await client.query(
         'SELECT * FROM cart_items WHERE user_id = $1',
-        [pureUserId]
+        [userId]
       );
       
       const cart_items = cartItemsResult.rows;
@@ -49,7 +50,7 @@ class Order {
 
       const orderResult = await client.query(orderQuery, [
         orderNumber,
-        pureUserId,
+        userId,
         total_amount,
         delivery_fee,
         final_amount,
@@ -58,6 +59,8 @@ class Order {
         JSON.stringify(payment_info),
         order_notes
       ]);
+      
+      console.log('✅ Order created:', orderNumber);
 
       const order = orderResult.rows[0];
 
@@ -91,7 +94,8 @@ class Order {
       );
 
       // Clear user's cart after successful order
-      await client.query('DELETE FROM cart_items WHERE user_id = $1', [pureUserId]);
+      await client.query('DELETE FROM cart_items WHERE user_id = $1', [userId]);
+      console.log('🗑️ Cart cleared for user');
 
       await client.query('COMMIT');
       return { success: true, data: order };
@@ -120,10 +124,9 @@ class Order {
       let params = [orderId];
 
       if (userId) {
-        // Convert prefixed user ID to pure UUID for database query
-        const pureUserId = userId.includes('_') ? userId.split('_')[1] : userId;
+        // userId is UUID, use directly
         query += ' AND o.user_id = $2';
-        params.push(pureUserId);
+        params.push(userId);
       }
 
       const result = await db.query(query, params);
@@ -150,10 +153,9 @@ class Order {
       let params = [orderNumber];
 
       if (userId) {
-        // Convert prefixed user ID to pure UUID for database query
-        const pureUserId = userId.includes('_') ? userId.split('_')[1] : userId;
+        // userId is UUID, use directly
         query += ' AND o.user_id = $2';
-        params.push(pureUserId);
+        params.push(userId);
       }
 
       const result = await db.query(query, params);
@@ -167,8 +169,7 @@ class Order {
   // Get user's orders
   static async getByUserId(userId, limit = 10, offset = 0) {
     try {
-      // Convert prefixed user ID to pure UUID for database query
-      const pureUserId = userId.includes('_') ? userId.split('_')[1] : userId;
+      // userId is UUID, use directly
       
       const query = `
         SELECT 
@@ -182,7 +183,7 @@ class Order {
         LIMIT $2 OFFSET $3
       `;
 
-      const result = await db.query(query, [pureUserId, limit, offset]);
+      const result = await db.query(query, [userId, limit, offset]);
       return result.rows;
     } catch (error) {
       console.error('Error fetching user orders:', error);
@@ -213,10 +214,10 @@ class Order {
             '[]'::json
           ) as product_images
         FROM order_items oi
-        LEFT JOIN products p ON oi.product_id::uuid = p.id
-        LEFT JOIN product_variants v ON oi.variant_id::uuid = v.id
-        LEFT JOIN product_colors c ON oi.color_id::uuid = c.id
-        LEFT JOIN product_images pi ON oi.product_id::uuid = pi.product_id
+        LEFT JOIN products p ON oi.product_id = p.id
+        LEFT JOIN product_variants v ON oi.variant_id = v.id
+        LEFT JOIN product_colors c ON oi.color_id = c.id
+        LEFT JOIN product_images pi ON oi.product_id = pi.product_id
         WHERE oi.order_id = $1
         GROUP BY oi.id, p.id, v.id, c.id
         ORDER BY oi.created_at
